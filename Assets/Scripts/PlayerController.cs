@@ -1,23 +1,52 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float walkSpeed;
     [Header("Player Properties")]
-    public float inventario;
+    public string[] inventarioAtaque = new string [9];
+    public string[] inventarioDefesa = new string[9];
+    public string[] inventarioCura = new string[9];
+    public string[] buffs = new string[9];
+    public Transform spawnPoint;
+    public float rotacaoSpeed = 720;
     private Rigidbody2D rb;
+    public bool canMove = true;
+    GameObject instancia;
+    public static PlayerController player;
 
     void Start()
     {
+        //instancia = Instantiate(this.gameObject);
+        player.gameObject.transform.position = spawnPoint.position;
         rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void Awake()
+    {
+        player = this;
+        DontDestroyOnLoad(this.gameObject);
     }
 
 
     void Update()
     {
+        if(canMove)
         HandleMovement();
+        VerifyScene();
 
+    }
+
+    private void FixedUpdate()
+    {
+        if (rb.velocity != Vector2.zero)
+        {
+            Quaternion rotacaoDesejada = Quaternion.LookRotation(transform.forward, rb.velocity);
+            Quaternion rotacao = Quaternion.RotateTowards(transform.rotation, rotacaoDesejada, rotacaoSpeed * Time.deltaTime);
+            rb.MoveRotation(rotacao);
+        }
     }
     public void HandleMovement()
     {
@@ -31,38 +60,40 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    public void ManageInventory(string name)
+    public void ManageInventory(string name, string tipoItem)
     {
-
-        //EXEMPLOS, CODIGO VAI MUDAR QUANDO DECIDIDOS OS ITENS
-        if (name.ToLower().Equals("curativo"))
+        for (int i = 0; i < inventarioAtaque.Length; i++)
         {
+            if (tipoItem == "ataque")
+                inventarioAtaque[i] = name;
 
-            inventario++;
+            if (tipoItem == "defesa")
+                inventarioDefesa[i] = name;
 
+            if (tipoItem == "cura")
+                inventarioCura[i] = name;
         }
 
-        if (name.ToLower().Equals("lapis"))
+    }
+    public void ChangeSpawnPoint(Transform newSpawn) {
+
+        spawnPoint = newSpawn;
+
+    }
+
+    private void VerifyScene() 
+    {
+        if (SceneManager.GetSceneByName("TopDownLuzDaEsperanca").isLoaded)
         {
-
-            inventario++;
-
+            this.gameObject.SetActive(true);
+            canMove = true;
         }
 
-        if (name.ToLower().Equals("caderno"))
+        else
         {
-
-            inventario++;
-
+            this.gameObject.SetActive(false);
+            canMove = false;
         }
-
-        if (name.ToLower().Equals("papel"))
-        {
-
-            //ativar uma parte da UI q mostre o papel encontrado com sua historia
-
-        }
-
 
     }
 }

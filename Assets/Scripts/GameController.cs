@@ -36,23 +36,50 @@ public class GameController : MonoBehaviour
     [Header("Action Buttons")]
     [SerializeField] private Button attackButton;
     [SerializeField] private Button empathyButton;
-    [SerializeField] private Button strongerAttackButton;
-    [SerializeField] private Button strongerEmpathyButton;
+    [SerializeField] private Button itemButton;
 
     [Header("Action Buttons Text")]
     [SerializeField] private GameObject attackButtonTxt;
     [SerializeField] private GameObject empathyButtonTxt;
+    [SerializeField] private GameObject itemButtonTxt;
 
     [Header("GameObject Buttons")]
     [SerializeField] private GameObject attackButtonGM;
     [SerializeField] private GameObject empathyButtonGM;
+    [SerializeField] private GameObject itemButtonGM;
     [SerializeField] private GameObject nextSceneEnemyDefeatedGM;
     [SerializeField] private GameObject nextSceneEnemyConvertedGM;
     [SerializeField] private GameObject resetSceneGM;
 
+    [Header("Buttons Attack")]
+    [SerializeField] private Button firstAttackButton;
+    [SerializeField] private GameObject firstAttackButtonTxt;
+    [SerializeField] private Button secondAttackButton;
+    [SerializeField] private GameObject secondAttackButtonTxt;
+
+    [Header("Buttons Empathy")]
+    [SerializeField] private Button firstEmpathyButton;
+    [SerializeField] private GameObject firstEmpathyButtonTxt;
+    [SerializeField] private Button secondEmpathyButton;
+    [SerializeField] private GameObject secondEmpathyButtonTxt;
+
+    [Header("Buttons Items")]
+    [SerializeField] private Button firstitemButton;
+    [SerializeField] private Button secondItemButton;
+    [SerializeField] private Button thirdItemButton;
+
+    [Header("Buttons Groups")]
+    [SerializeField] private GameObject itemOptions;
+    [SerializeField] private GameObject empathyOptions;
+    [SerializeField] private GameObject attackOptions;
+    [SerializeField] private GameObject defaultOptions;
+
     [Header("Enemy Stats")]
     [SerializeField] private float enemyAttackValue = 0.25f;
     [SerializeField] private float enemyHealthValue = 1.0f;
+
+    [Header("Items")]
+    [SerializeField] private float itemHealValue = 0.10f;
 
     private List<GameObject> turnOrder;
     private int currentTurnIndex;
@@ -67,28 +94,9 @@ public class GameController : MonoBehaviour
     {
         menu = Input.GetAxis("MENU");
         Menu();
-        if (EventSystem.current.currentSelectedGameObject == attackButtonGM) {
-            attackButtonTxt.SetActive(true);
-        
-        }
+        SetButtonTexts();
+        ReturnToDefaultButtons();
 
-        else if (EventSystem.current.currentSelectedGameObject != attackButtonGM)
-        {
-            attackButtonTxt.SetActive(false);
-
-        }
-
-        if (EventSystem.current.currentSelectedGameObject == empathyButtonGM)
-        {
-            empathyButtonTxt.SetActive(true);
-
-        }
-
-        else if (EventSystem.current.currentSelectedGameObject != empathyButtonGM)
-        {
-            empathyButtonTxt.SetActive(false);
-
-        }
     }
 
     private void InitializeGame()
@@ -132,7 +140,7 @@ public class GameController : MonoBehaviour
     {
         attackButton.interactable = false;
         empathyButton.interactable = false;
-        strongerEmpathyButton.interactable = false;
+        itemButton.interactable = false;
     }
 
     private void ActivatePlayer1Turn()
@@ -157,7 +165,7 @@ public class GameController : MonoBehaviour
     {
         attackButton.interactable = true;
         empathyButton.interactable = true;
-        strongerEmpathyButton.interactable = true;
+        itemButton.interactable = true;
     }
 
     private IEnumerator EnemyAttackRoutine()
@@ -192,27 +200,12 @@ public class GameController : MonoBehaviour
         }
     }
 
-    //continuar depois do play test
-    public void StrongerEmpathyButton()
-    {
-        AdjustEnemyAura();
-
-        if (enemyAura.GetComponent<Image>().color.a == 0)
-        {
-            enemyConverted.SetActive(true);
-        }
-        else
-        {
-            NextTurn();
-        }
-    }
-
 
     private void AdjustEnemyAura()
     {
         Color auraColor = enemyAura.GetComponent<Image>().color;
 
-        string[] characters = { "Jimmy", "Alice", "Jake", "Vanessa", "Gabriel" };
+        string[] characters = { "Jimmy", "Vanessa"};
         if (turnOrder[currentTurnIndex] == player1)
             foreach (string character in characters)
             {
@@ -265,9 +258,13 @@ public class GameController : MonoBehaviour
 
     public void AttackButton()
     {
-        AdjustEnemyHealth();
+        //AdjustEnemyHealth();
 
-        if (enemyHealth.value == 0)
+        attackOptions.SetActive(true);
+        defaultOptions.SetActive(false);
+        firstAttackButton.Select();
+
+        /*if (enemyHealth.value == 0)
         {
             enemyDefeated.SetActive(true);
             EventSystem.current.SetSelectedGameObject(nextSceneEnemyDefeatedGM);
@@ -276,27 +273,41 @@ public class GameController : MonoBehaviour
         else
         {
             NextTurn();
-        }
+        }*/
     }
-    
-    //continuar depois do play test
-    public void StrongerAttackButton()
-    {
-        AdjustEnemyHealth();
+    private void ReturnToDefaultButtons() {
 
-        if (enemyAura.GetComponent<Image>().color.a == 0)
-        {
-            enemyConverted.SetActive(true);
+        if (attackOptions.activeSelf && Input.GetButtonDown("BRANCO0")) {
+
+            attackOptions.SetActive(false);
+            defaultOptions.SetActive(true);
+            attackButton.Select();
+        
         }
-        else
+
+        else if (empathyOptions.activeSelf && Input.GetButtonDown("BRANCO0"))
         {
-            NextTurn();
+
+            empathyOptions.SetActive(false);
+            defaultOptions.SetActive(true);
+            empathyButton.Select();
+
         }
+
+        else if (itemOptions.activeSelf && Input.GetButtonDown("BRANCO0"))
+        {
+
+            itemOptions.SetActive(false);
+            defaultOptions.SetActive(true);
+            itemButton.Select();
+
+        }
+
     }
 
     private void AdjustEnemyHealth()
     {
-        string[] characters = {"Jimmy", "Alice", "Jake", "Vanessa", "Gabriel"};
+        string[] characters = {"Jimmy", "Vanessa"};
         if (turnOrder[currentTurnIndex] == player1)
             foreach (string character in characters)
             {
@@ -317,6 +328,48 @@ public class GameController : MonoBehaviour
                 }
 
             }
+    }
+
+    public void ItemButton()
+    {
+
+        string itemName = "curativo"; //mudar
+        AdjustPlayerHealth(itemName);
+
+        if (enemyHealth.value == 0)
+        {
+            enemyDefeated.SetActive(true);
+            EventSystem.current.SetSelectedGameObject(nextSceneEnemyDefeatedGM);
+
+        }
+        else
+        {
+            NextTurn();
+        }
+    }
+
+    private void AdjustPlayerHealth(string item) {
+
+        if (item == "curativo") {
+
+            playerHealth.value += playerHealth.maxValue * (itemHealValue * 0.1f);
+
+        }
+
+        if (item == "maca")
+        {
+
+            playerHealth.value += playerHealth.maxValue * (itemHealValue * 0.15f);
+
+        }
+
+        if (item == "suco")
+        {
+
+            playerHealth.value += playerHealth.maxValue * (itemHealValue * 0.25f);
+
+        }
+
     }
 
     private float GetCharacterDamage(string character) 
@@ -353,7 +406,7 @@ public class GameController : MonoBehaviour
 
     public void ResetSceneButton()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene("TopDownLuzDaEsperanca");
     }
 
     public void NextSceneButton()
@@ -365,6 +418,70 @@ public class GameController : MonoBehaviour
 
         if (menu > 0.0f)
             SceneManager.LoadScene(0);
+
+    }
+    private void SetButtonTexts() 
+    {
+        if (defaultOptions.activeSelf)
+        {
+            if (EventSystem.current.currentSelectedGameObject == attackButtonGM)
+            {
+                attackButtonTxt.SetActive(true);
+                empathyButtonTxt.SetActive(false);
+                itemButtonTxt.SetActive(false);
+
+            }
+
+            if (EventSystem.current.currentSelectedGameObject == empathyButtonGM)
+            {
+                attackButtonTxt.SetActive(false);
+                empathyButtonTxt.SetActive(true);
+                itemButtonTxt.SetActive(false);
+
+            }
+
+            if (EventSystem.current.currentSelectedGameObject == itemButtonGM)
+            {
+                attackButtonTxt.SetActive(false);
+                empathyButtonTxt.SetActive(false);
+                itemButtonTxt.SetActive(true);
+
+            }
+        }
+
+        if (attackOptions.activeSelf)
+        {
+            if (EventSystem.current.currentSelectedGameObject.GetComponent<Button>() == firstAttackButton)
+            {
+                firstAttackButtonTxt.SetActive(true);
+                secondAttackButtonTxt.SetActive(false);
+
+            }
+
+            if (EventSystem.current.currentSelectedGameObject.GetComponent<Button>() == secondAttackButton)
+            {
+                firstAttackButtonTxt.SetActive(false);
+                secondAttackButtonTxt.SetActive(true);
+
+            }
+        }
+
+        if (empathyOptions.activeSelf)
+        {
+            if (EventSystem.current.currentSelectedGameObject.GetComponent<Button>() == firstEmpathyButton)
+            {
+                firstEmpathyButtonTxt.SetActive(true);
+                secondEmpathyButtonTxt.SetActive(false);
+
+            }
+
+            if (EventSystem.current.currentSelectedGameObject.GetComponent<Button>() == secondEmpathyButton)
+            {
+                firstEmpathyButtonTxt.SetActive(false);
+                secondEmpathyButtonTxt.SetActive(true);
+
+            }
+        }
 
     }
 }
